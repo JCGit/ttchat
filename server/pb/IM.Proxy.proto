@@ -1,0 +1,180 @@
+package IM.Proxy;
+import "IM.BaseDefine.proto";
+import "IM.Group.proto";
+option optimize_for = LITE_RUNTIME;
+
+//service id: 
+ 
+enum UserOperate{
+	USER_OPERATE_BIND	 		    = 1;
+	USER_OPERATE_UNBIND 		    = 2;
+	USER_OPERATE_FRIEND_ADD		    = 3;
+	USER_OPERATE_FRIEND_DELETE 	    = 4;
+	USER_OPERATE_FRIEND_AGGRE 	    = 5;
+	USER_OPERATE_FRIEND_REFUSE 	    = 6;
+    USER_OPERATE_FRIEND_DELETE_BOTH = 7;
+} 
+
+enum UserList{
+	USER_LIST_SUB_ITEMS 	= 1;
+	USER_LIST_FRIEND 		= 2;
+}
+
+message IMProxyEnableReq{
+	//cmd id:  		0x0905
+	required uint32 user_id = 1;///< admin user id
+	required uint32 set_id  = 2;///< target user id: to change this user to proxy
+	required uint32 enable  = 3;	//1:设置 0:禁用
+	optional bytes attach_data = 20;// 服务端用，客户端不用设置
+}
+
+message IMProxyEnableRsp{
+  //cmd id: x0906
+  required uint32 res         = 1;///< 0:成功 1:非管理员无权设置代理 2:该用户已是代理或管理员 3:该用户不是代理无需取消
+  required uint32 user_id     = 2;///< admin user id
+  required uint32 enable_id   = 3;///< target user id: to change this user to proxy
+  required uint32 enable      = 4;///< 1:设置 0:禁用
+  optional uint32 group_id    = 5;
+  optional bytes  attach_data = 20;///< 服务端用，客户端不用设置
+}
+
+message IMProxyEnableNotify{
+  //cmd id: 0x0907
+  required uint32 user_id  = 1;
+  required uint32 enable   = 2;
+  optional uint32 group_id = 3;
+}
+
+message IMProxyBindReq{
+	//cmd id:  		0x0901
+	required uint32 user_id 		= 1;
+	required string user_bind 		= 2;		// ID
+	required uint32 bind_tag 		= 3; 	 	// UserOperate
+	optional bytes attach_data = 20;// 服务端用，客户端不用设置
+}
+
+message IMProxyBindRsp{
+	//cmd id:  		0x0902
+	required uint32 user_id 			 		= 1;
+	required uint32 user_bind 					= 2; 	// 代理用户ID
+	required uint32 bind_tag 					= 3; 	// UserOperate
+	required uint32 result_code 				= 4; 	//ProxyUpgradeErrType
+
+	repeated IM.Group.IMGroupChangeTarget targets = 5;	// 绑定成功需要通知的对象
+
+	optional bytes attach_data = 20;// 服务端用，客户端不用设置
+}
+
+message IMProxyFriendReq{
+	//cmd id:		0x1001
+	required uint32 user_id 			= 1;
+	required uint32 user_ope 			= 2;
+	required uint32 ope_type 			= 3; 	//UserOperate
+	optional bytes attach_data 			= 20;
+}
+
+ message IMProxyFriendRsp{
+	//cmd id:		0x1002
+	required uint32 user_id 			= 1;
+	required uint32 user_ope 			= 2;
+	required uint32 ope_type 			= 3; 	//UserOperate
+	required uint32 result_code			= 4; 	// 0:成功 1:失败
+	optional bytes attach_data 			= 20;
+ }
+
+ message IMProxyFriendNotify{
+	//cmd id:		0x1003
+	required uint32 user_id 			= 1;
+	required uint32 user_ope 			= 2;
+	required uint32 ope_type 			= 3; 	//UserOperate
+	required uint32 result_code			= 4; 	// 0:成功 1:失败
+ }
+
+ message IMProxyUserListReq{
+	//cmd id:		0x0903
+	required uint32 user_id = 1;
+	required uint32 latest_update_time = 2;
+	optional bytes attach_data = 20;
+ }
+
+ message IMProxyUserListRsp{
+	//cmd id:		0x0904
+	required uint32 user_id 				= 1;
+	required uint32 latest_update_time 		= 2;
+	repeated IM.BaseDefine.UserInfo new_friends = 3;
+	repeated IM.BaseDefine.UserInfo now_proxys  = 4;
+	repeated IM.BaseDefine.UserInfo now_subline = 5;
+	repeated IM.BaseDefine.UserInfo now_friends = 6;
+	optional bytes attach_data = 20;
+}
+
+message IMProxyRedpack{
+	//cmd id:			0x1101
+	required uint32 from_user_id 	= 1;	//消息发送方
+	required uint32 to_session_id 	= 2;	//消息接受方
+
+	required uint32 msg_id 			= 3;
+	required uint32 create_time 	= 4; 
+	required IM.BaseDefine.MsgType msg_type = 5;
+
+	optional uint32 currency 		= 6;	//红包货币
+	optional uint32 pack_num 		= 7; 	//红包个数
+	required uint32 pack_type 		= 8;	//红包类型 0:随机红包 1:平均红包
+	required string content 		= 9;	//红包祝福语
+
+	optional bytes attach_data = 20;
+}
+
+message IMProxyRedpackAck{
+	//cmd id:				0x1102
+	required uint32 ret_code 		= 1;	//0:成功 1:货币不足
+	optional uint32 user_id 		= 2;
+	optional uint32 session_id 		= 3;
+	optional uint32 msg_id 			= 4;
+	optional IM.BaseDefine.SessionType session_type = 5;
+
+	optional bytes attach_data = 20;
+}
+
+message IMProxyRedpackClaimReq{
+	//cmd id:               0x1103   
+	required uint32 user_id 	= 1;  
+	required uint32 session_id 	= 2;    	
+	required uint32 pack_id 	= 3;
+	
+	optional bytes attach_data = 20;
+}
+
+// 玩家领取红包情况
+message ClaimInfo{
+	required uint32 currency 	= 1;
+	required IM.BaseDefine.UserInfo user_info = 2;
+}
+
+message IMProxyRedpackClaimRsp{
+	//cmd id:				0x1104
+	required uint32 pack_id 	= 1;
+	required uint32 user_id 	= 2;	//抢红包者
+	required uint32 sender_id 	= 3;	//红包发送者
+	required uint32 pack_num 	= 4; 	//红包个数
+	required uint32 pack_type 	= 5;	//红包类型 0:随机红包 1:平均红包
+	required uint32 last_num 	= 6; 	//剩余个数
+	repeated ClaimInfo user_claim = 7;	//各个人领取情况
+
+	
+	optional bytes attach_data = 20;
+}
+
+message IMProxyRedpackNotify{
+	//cmd id:				0x1105
+	required uint32 pack_id 	= 1;
+	required string user_name = 2;
+	required uint32 pack_status = 3; 	//0:已领完 1:未领完
+}
+
+// 红包未被领取完的通知
+message IMProxyRedpackNonClaimedNotify{
+	//cmd id:				0x1106
+	required uint32 pack_id 	= 1;
+	required uint32 currency 	= 2;
+}

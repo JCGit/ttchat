@@ -1,0 +1,31 @@
+cmake_minimum_required(VERSION 2.6)
+PROJECT(Base)
+
+aux_source_directory(${PROJECT_SOURCE_DIR}/uchat uchat_src)
+AUX_SOURCE_DIRECTORY(./ SRC_LIST1)
+AUX_SOURCE_DIRECTORY(./pb/protocol SRC_LIST2)
+AUX_SOURCE_DIRECTORY(./jsoncpp SRC_LIST3)
+
+if(APPLE)
+    SET(PB_LIB_DIR ./pb/lib/mac)
+elseif(UNIX)
+    SET(PB_LIB_DIR ./pb/lib/linux)
+endif()
+
+SET(LIBRARY_OUTPUT_PATH ./)
+#SET(EXECUTABLE_OUTPUT_PATH  ./bin)
+
+ADD_DEFINITIONS( -g -W -Wall -D_REENTRANT -D_FILE_OFFSET_BITS=64 -DAC_HAS_INFO
+-DAC_HAS_WARNING -DAC_HAS_ERROR -DAC_HAS_CRITICAL -DTIXML_USE_STL -std=c++11
+-DAC_HAS_DEBUG -DLINUX_DAEMON)
+include_directories(include)
+INCLUDE_DIRECTORIES(./ ../ ./jsoncpp ./pb ./pb/protocol)
+LINK_DIRECTORIES(./ ${PB_LIB_DIR} ./slog/lib)
+
+ADD_LIBRARY(base STATIC ${uchat_src} ${SRC_LIST1} ${SRC_LIST2} ${SRC_LIST3})
+
+#ADD_XXXX必须在TARGET_LINK_LIBRARIES前面，否则会报错
+#ADD_LIBRARY(${PROJECTNAME} SHARED ${SRC_LIST})
+#ADD_EXECUTABLE(${PROJECTNAME} ${SRC_LIST})
+
+TARGET_LINK_LIBRARIES(base pthread slog curl security)

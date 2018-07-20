@@ -1,0 +1,235 @@
+syntax = "proto2";
+package IM.Group;
+import "IM.BaseDefine.proto";
+option java_package = "com.mogujie.tt.protobuf";
+//option java_outer_classname = "MOGUJIEIMMessage";
+option optimize_for = LITE_RUNTIME;
+
+//service id:0x0004
+
+message IMNormalGroupListReq{
+	//cmd id:			0x0401
+	required uint32 user_id = 1;
+	optional bytes attach_data = 20;
+}
+
+message IMNormalGroupListRsp{
+	//cmd id:			0x0402
+	required uint32 user_id = 1;
+	repeated IM.BaseDefine.GroupVersionInfo group_version_list = 2;
+	optional bytes attach_data = 20;
+}
+
+// Group info
+message IMGroupInfoListReq{
+	//cmd id:			0x0403
+	required uint32 user_id = 1;
+	repeated IM.BaseDefine.GroupVersionInfo group_version_list = 2;
+	optional bytes attach_data = 20;
+}
+
+message IMGroupInfoListRsp{
+	//cmd id:			0x0404
+	required uint32 user_id = 1;
+	repeated IM.BaseDefine.GroupInfo group_info_list = 2;
+	optional bytes attach_data = 20;
+}
+/**
+ * IM.Group.InfoModifyRequest
+ * @sa IM.BaseDefine.GroupCmdID.CID_GROUP_INFO_MODIFY_REQUEST
+ */
+message InfoModifyRequest {
+  /// Operation request user, should be group owner or admin
+  required uint32 user_id  = 1;
+  required uint32 group_id = 2;///< Operating group id
+  /**
+   * Operation type
+   * 1: modify group name
+   * 2: modify group announcement
+   */
+  required uint32 op       = 3;
+  optional bytes  op_data     = 4;///< Operating data
+  optional bytes  attach   = 20;/// Server internal use
+}
+/**
+ * IM.Group.InfoModifyResponse
+ * @sa IM.BaseDefine.GroupCmdID.CID_GROUP_INFO_MODIFY_RESPONSE
+ */
+message InfoModifyResponse {
+  required uint32 user_id  = 1;///< Group owner or admin
+  required uint32 group_id = 2;///< Operating group id
+  required uint32 op       = 3;///< Operation type
+  required int32  code     = 4;///< 0 is OK
+  repeated uint32 member   = 5;///< Server internal use: group member id list
+  optional bytes  op_data     = 6;///< Operating data
+  optional bytes  attach   = 20;///< Server internal use
+}
+/*
+ * IM.Group.InfoModifyNotify
+ * @sa IM.BaseDefine.GroupCmdID.CID_GROUP_INFO_MODIFY_NOTIFY
+ */
+message InfoModifyNotify {
+  required uint32 user_id  = 1;///< Group owner or admin
+  required uint32 group_id = 2;///< Operating group id
+  required uint32 op       = 3;///< Operation type
+  optional bytes  op_data     = 4;///< Operating data
+}
+
+message IMGroupCreateReq{
+	//cmd id:			0x0405
+	required uint32 user_id = 1;
+	required IM.BaseDefine.GroupType group_type = 2 [default = GROUP_TYPE_TMP];		//默认是创建临时群，且客户端只能创建临时群
+	required string group_name = 3;
+	required string group_avatar = 4;
+	repeated uint32 member_id_list = 5;
+	optional bytes attach_data = 20;
+}
+
+message IMGroupCreateRsp{
+	//cmd id:			0x0406
+	required uint32 user_id = 1;
+	required uint32 result_code = 2;
+	optional uint32 group_id = 3;
+	required string group_name = 4;
+	repeated uint32 user_id_list = 5;
+	optional bytes attach_data = 20;
+}
+
+message IMGroupChangeMemberReq{
+	//cmd id:			0x0407
+	required uint32 user_id = 1;
+	required IM.BaseDefine.GroupModifyType change_type = 2;
+	required uint32 group_id = 3;
+	repeated uint32 member_id_list = 4;
+	optional bytes attach_data = 20;
+}
+
+message IMGroupChangeMemberRsp{
+	//cmd id:			0x0408
+	required uint32 user_id = 1;
+	required IM.BaseDefine.GroupModifyType change_type = 2;
+	required uint32 result_code = 3;
+	required uint32 group_id = 4;
+	repeated uint32 cur_user_id_list = 5;			//现有的成员id		
+	repeated uint32 chg_user_id_list = 6;			//变动的成员id,add: 表示添加成功的id,   del: 表示删除的id
+	optional bytes attach_data = 20;
+}
+
+message IMGroupChangeTarget{
+	required uint32 group_id = 1;
+	repeated uint32 cur_user_id = 2;			//现有的成员id		
+}
+
+
+/**
+ * IM.Group.ShieldRequest
+ * IM.GroupCmdID.CID_GROUP_SHIELD_REQUEST
+ */
+message ShieldRequest {
+    required uint32 user_id  = 1;///< in-group group member id
+    required uint32 group_id = 2;///< group id
+    required uint32 shield   = 3;///< 1: shield 0: not shield
+    optional bytes  attach   = 20;///< server internal use
+}
+/**
+ * @name IM.Group.ShieldResponse
+ * @sa
+ * - IM.GroupCmdID.CID_GROUP_SHIELD_RESPONSE
+ * - uchat.proto.code.* for .code
+ */
+message ShieldResponse {
+  required uint32 user_id  = 1;///< request user_id
+  required uint32 group_id = 2;///< request group_id
+  required int32  code     = 3;///< 0: OK, other: error number
+  optional bytes  attach   = 20;///< server internal use
+}
+/// DEPRECATED use IM.Group.ShieldRequest instead
+message IMGroupShieldReq{
+	//cmd id:			0x0409
+	required uint32 user_id = 1;
+	required uint32 group_id = 2;
+	required uint32 shield_status = 3;
+	optional bytes attach_data = 20;
+}
+/// DEPRECATED use IM.Group.ShieldResponse instead
+message IMGroupShieldRsp{
+	//cmd id:			0x040a
+	required uint32 user_id = 1;
+	required uint32 group_id = 2;
+	required uint32 result_code = 3;			//0:successed 1:failed
+	optional bytes attach_data = 20;
+}
+
+message IMGroupChangeMemberNotify{
+	//cmd id: 			0x040b
+	required uint32 user_id = 1;
+	required IM.BaseDefine.GroupModifyType change_type = 2;
+	required uint32 group_id = 3;
+	repeated uint32 cur_user_id_list = 4;			//现有的成员id
+	repeated uint32 chg_user_id_list = 5;			//add: 表示添加成功的id,   del: 表示删除的id
+}
+
+message IMGroupPK10RuleReq{
+	//cmd id: 			0x0414
+
+}
+
+message IMGroupPK10RuleRsp{
+	//cmd id: 			0x0415
+	repeated IM.BaseDefine.GroupPKInfo pk_group = 1;
+}
+
+message IMGroupChangePK10Req{
+	//cmd id: 			0x0411
+	required uint32 user_id = 1;
+	required IM.BaseDefine.GroupModifyType change_type = 2;
+	required uint32 group_id = 3;
+	required string pk10_rules = 4;
+
+	optional bytes attach_data = 20;
+}
+
+message IMGroupChangePK10Rsp{
+	//cmd id: 			0x0412
+	required uint32 result_code = 1;			//0:succe	ssed 1:failed
+	required uint32 user_id = 2;
+	required uint32 is_admin = 3; 				//1:admin  0:proxy
+	required uint32 group_id = 4;
+	required string pk10_rules = 5;
+	
+	repeated uint32 group_member_list = 6;
+	repeated uint32 proxy_list = 7;
+
+	optional bytes attach_data = 20;
+}
+
+message IMGroupChangePK10Notify{
+	//cmd id: 			0x0413
+	required uint32 user_id = 1;
+	required uint32 is_admin = 2; 				//1:admin  0:proxy
+	required string pk10_rules = 3;
+	repeated uint32 user_list = 4;	
+}
+
+message IMPlaceItem{
+	required uint32 main = 1;
+	required uint32 sub = 2;
+	required uint32 gold = 3;
+}
+
+message IMGroupPK10PlaceReq{
+	//cmd id: 			0x0413
+	required uint32 user_id = 1;
+	required uint32 group_id = 2;
+	required uint32 rule = 3;
+	repeated IMPlaceItem items = 4;
+	required uint32 time = 5;
+
+	optional bytes attach_data = 20;
+}
+
+message IMGroupPK10PlaceRsp{
+	required uint32 user_id = 1;
+	required uint32 result_code = 2; 	//1:服务器数据错误 2:未开盘 3:已封盘 4:金额不足
+	optional bytes attach_data = 20;
+}
